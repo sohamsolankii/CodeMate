@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
     firstName: {
       type: String,
       required: true,
+      minLength: 4,
       maxLength: 50,
     },
     lastName: {
@@ -82,8 +83,9 @@ const userSchema = new mongoose.Schema(
 userSchema.methods.getJWT = async function () {
   const user = this;
 
+  // Use environment variables for secret and expiry
   const token = await jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
+    expiresIn: process.env.JWT_EXPIRE, // e.g., '7d'
   });
 
   return token;

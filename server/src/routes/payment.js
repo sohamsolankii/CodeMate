@@ -9,7 +9,7 @@ const {
   validateWebhookSignature,
 } = require("razorpay/dist/utils/razorpay-utils");
 
-paymentRouter.post("/create", userAuth, async (req, res) => {
+paymentRouter.post("/payment/create", userAuth, async (req, res) => {
   try {
     const { membershipType } = req.body;
     const { firstName, lastName, emailId } = req.user;
@@ -48,7 +48,7 @@ paymentRouter.post("/create", userAuth, async (req, res) => {
   }
 });
 
-paymentRouter.post("/webhook", async (req, res) => {
+paymentRouter.post("/payment/webhook", async (req, res) => {
   try {
     console.log("Webhook Called");
     const webhookSignature = req.get("X-Razorpay-Signature");

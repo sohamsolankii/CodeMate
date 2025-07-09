@@ -8,7 +8,7 @@ const User = require("../models/user");
 const USER_SAFE_DATA = "firstName lastName photoUrl age gender about skills";
 
 // Get all the pending connection request for the loggedIn user
-userRouter.get("/requests/received", userAuth, async (req, res) => {
+userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
 
@@ -27,12 +27,9 @@ userRouter.get("/requests/received", userAuth, async (req, res) => {
   }
 });
 
-userRouter.get("/connections", userAuth, async (req, res) => {
+userRouter.get("/user/connections", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
-
-	// aksay => elon -> accepted
-	// elon => moayank -> accepted
 
     const connectionRequests = await ConnectionRequest.find({
       $or: [
@@ -58,16 +55,9 @@ userRouter.get("/connections", userAuth, async (req, res) => {
   }
 });
 
-// paginated feed of users
 userRouter.get("/feed", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
-
-	// user should see the users cards except
-	// 0. his own profile
-	// 1. his connections
-	// 2. ignored users
-	// 3. already send a connection request to the user
 
     const page = parseInt(req.query.page) || 1;
     let limit = parseInt(req.query.limit) || 10;
@@ -78,7 +68,6 @@ userRouter.get("/feed", userAuth, async (req, res) => {
       $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
     }).select("fromUserId  toUserId");
 
-	// set data structure to hide users from feed & unique value 
     const hideUsersFromFeed = new Set();
     connectionRequests.forEach((req) => {
       hideUsersFromFeed.add(req.fromUserId.toString());
@@ -87,8 +76,8 @@ userRouter.get("/feed", userAuth, async (req, res) => {
 
     const users = await User.find({
       $and: [
-        { _id: { $nin: Array.from(hideUsersFromFeed) } },		// not in this erray
-        { _id: { $ne: loggedInUser._id } },	                     // not equal to loggedInUser
+        { _id: { $nin: Array.from(hideUsersFromFeed) } },
+        { _id: { $ne: loggedInUser._id } },
       ],
     })
       .select(USER_SAFE_DATA)

@@ -8,7 +8,7 @@ const User = require("../models/user");
 const sendEmail = require("../utils/sendEmail");
 
 requestRouter.post(
-  "/send/:status/:toUserId",
+  "/request/send/:status/:toUserId",
   userAuth,
   async (req, res) => {
     try {
@@ -28,7 +28,6 @@ requestRouter.post(
         return res.status(404).json({ message: "User not found!" });
       }
 
-	  //! If there is an existing connection request between the users,
       const existingConnectionRequest = await ConnectionRequest.findOne({
         $or: [
           { fromUserId, toUserId },
@@ -67,20 +66,18 @@ requestRouter.post(
 );
 
 requestRouter.post(
-  "/review/:status/:requestId",
+  "/request/review/:status/:requestId",
   userAuth,
   async (req, res) => {
     try {
       const loggedInUser = req.user;
       const { status, requestId } = req.params;
 
-	  // validate the status - user can only accept or reject a request
       const allowedStatus = ["accepted", "rejected"];
       if (!allowedStatus.includes(status)) {
         return res.status(400).json({ messaage: "Status not allowed!" });
       }
 
-	  // 
       const connectionRequest = await ConnectionRequest.findOne({
         _id: requestId,
         toUserId: loggedInUser._id,
