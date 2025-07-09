@@ -14,6 +14,8 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
   }
 });
 
+// Patch: Partially updates a resource
+
 profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   try {
     if (!validateEditProfileData(req)) {

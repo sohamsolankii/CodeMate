@@ -31,6 +31,9 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
 
+	// aksay => elon -> accepted
+	// elon => moayank -> accepted
+
     const connectionRequests = await ConnectionRequest.find({
       $or: [
         { toUserId: loggedInUser._id, status: "accepted" },
@@ -55,36 +58,48 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
   }
 });
 
+// paginated feed of users
+
 userRouter.get("/feed", userAuth, async (req, res) => {
   try {
-    const loggedInUser = req.user;
+		const loggedInUser = req.user
 
-    const page = parseInt(req.query.page) || 1;
-    let limit = parseInt(req.query.limit) || 10;
-    limit = limit > 50 ? 50 : limit;
-    const skip = (page - 1) * limit;
+		// user should see the users cards except
+		// 0. his own profile
+		// 1. his connections
+		// 2. ignored users
+		// 3. already send a connection request to the user
 
-    const connectionRequests = await ConnectionRequest.find({
-      $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
-    }).select("fromUserId  toUserId");
+		const page = parseInt(req.query.page) || 1
+		let limit = parseInt(req.query.limit) || 10
+		limit = limit > 50 ? 50 : limit
+		const skip = (page - 1) * limit
 
-    const hideUsersFromFeed = new Set();
-    connectionRequests.forEach((req) => {
-      hideUsersFromFeed.add(req.fromUserId.toString());
-      hideUsersFromFeed.add(req.toUserId.toString());
-    });
+		const connectionRequests = await ConnectionRequest.find({
+			$or: [
+				{ fromUserId: loggedInUser._id },
+				{ toUserId: loggedInUser._id },
+			],
+		}).select("fromUserId  toUserId")
 
-    const users = await User.find({
-      $and: [
-        { _id: { $nin: Array.from(hideUsersFromFeed) } },
-        { _id: { $ne: loggedInUser._id } },
-      ],
-    })
-      .select(USER_SAFE_DATA)
-      .skip(skip)
-      .limit(limit);
+		// set data structure to hide users from feed & unique value
+		const hideUsersFromFeed = new Set()
+		connectionRequests.forEach((req) => {
+			hideUsersFromFeed.add(req.fromUserId.toString())
+			hideUsersFromFeed.add(req.toUserId.toString())
+		})
 
-    res.json({ data: users });
+		const users = await User.find({
+			$and: [
+				{ _id: { $nin: Array.from(hideUsersFromFeed) } }, // not in this erray
+				{ _id: { $ne: loggedInUser._id } }, // not equal to loggedInUser
+			],
+		})
+			.select(USER_SAFE_DATA)
+			.skip(skip)
+			.limit(limit)
+
+		res.json({ data: users })
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
