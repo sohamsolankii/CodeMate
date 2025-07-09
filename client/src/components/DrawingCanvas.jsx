@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams } from "react-router-dom"
 import io from "socket.io-client"
 import { v4 as uuidv4 } from "uuid"
 import { drawOnCanvas } from "../utils/drawingUtils"
+import { BASE_URL } from "../utils/constants"
 
 const DrawingCanvas = () => {
 	const { roomId } = useParams()
@@ -31,7 +32,7 @@ const DrawingCanvas = () => {
 		context.lineCap = "round"
 		contextRef.current = context
 
-		const socket = io("http://localhost:7777")
+		const socket = io(BASE_URL)
 		socketRef.current = socket
 		socket.emit("joinRoom", { roomId, userId })
 
