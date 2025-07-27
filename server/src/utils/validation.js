@@ -1,36 +1,38 @@
-const validator = require("validator");
-
-const validateSignUpData = (req) => {
-  const { firstName, lastName, emailId, password } = req.body;
+const validate = require("validator");
+const validateData = (req) => {
+  const { firstName, lastName, emailId, password, photoURL,photos } = req.body;
   if (!firstName || !lastName) {
-    throw new Error("Name is not valid!");
-  } else if (!validator.isEmail(emailId)) {
-    throw new Error("Email is not valid!");
-  } else if (!validator.isStrongPassword(password)) {
-    throw new Error("Please enter a strong Password!");
+    throw new Error("FirstName/LastName missing");
+  } else if (!validate.isEmail(emailId)) {
+    throw new Error("Please enter valid email");
+  } else if (!validate.isStrongPassword(password)) {
+    throw new Error("Please enter strong password");
   }
 };
-
-const validateEditProfileData = (req) => {
-  const allowedEditFields = [
+const validateUserEditData = (req) => {
+  const ALLOWED_FIELDS = [
     "firstName",
     "lastName",
     "emailId",
-    "photoUrl",
-    "gender",
     "age",
+    "gender",
     "about",
     "skills",
+    "photoURL",
+    "photos"
   ];
+  const isValid=Object.keys(req.body).every((field)=>{
+    return ALLOWED_FIELDS.includes(field);
+  })
+  return isValid;
 
-  const isEditAllowed = Object.keys(req.body).every((field) =>
-    allowedEditFields.includes(field)
-  );
-
-  return isEditAllowed;
 };
 
+const validatePass=(req)=>{
+    return validate.isStrongPassword(req.body.newPassword);
+}
 module.exports = {
-  validateSignUpData,
-  validateEditProfileData,
+  validateData,
+  validateUserEditData,
+  validatePass
 };

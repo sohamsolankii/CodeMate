@@ -1,67 +1,73 @@
-const socket = require("socket.io")
-const crypto = require("crypto")
-const { Chat } = require("../models/chat")
-const ConnectionRequest = require("../models/connectionRequest")
-
-const getSecretRoomId = (userId, targetUserId) => {
-	return crypto
-		.createHash("sha256")
-		.update([userId, targetUserId].sort().join("$"))
-		.digest("hex")
-}
-
-// ✅ Store canvas data in-memory (can use Redis later)
-const drawingRoomData = {}
+const socket = require("socket.io");
+const crypto = require("crypto");
+const Chat = require("../models/chat");
 
 const initializeSocket = (server) => {
-	const io = socket(server, {
-		cors: {
-			origin: "http://localhost:5173", // Adjust frontend port if needed
-			methods: ["GET", "POST"],
-		},
-	})
+  const getSecretRoomId = (userId, targetUserId) => {
+    return crypto
+      .createHash("sha256")
+      .update([targetUserId, userId].sort().join("$"))
+      .digest("hex");
+  };
 
-	io.on("connection", (socket) => {
-		// ✅ Chat feature
-		socket.on("joinChat", ({ firstName, userId, targetUserId }) => {
-			const roomId = getSecretRoomId(userId, targetUserId)
-			console.log(firstName + " joined Chat Room: " + roomId)
-			socket.join(roomId)
-		})
+  const io = socket(server, {
+    cors: {
+      origin: "https://connectsy.vercel.app",
+      credentials: true
+    },
+  });
 
-		socket.on(
-			"sendMessage",
-			async ({ firstName, lastName, userId, targetUserId, text }) => {
-				try {
-					const roomId = getSecretRoomId(userId, targetUserId)
-					console.log(firstName + " says:", text)
+  // Store online users
+  const onlineUsers = {};
+  const drawingRoomData = {}
 
-					let chat = await Chat.findOne({
-						participants: { $all: [userId, targetUserId] },
-					})
 
-					if (!chat) {
-						chat = new Chat({
-							participants: [userId, targetUserId],
-							messages: [],
-						})
-					}
+  io.on("connection", (socket) => {
+    const userId = socket.handshake.query.userId;
 
-					chat.messages.push({ senderId: userId, text })
-					await chat.save()
+    if (userId) {
+      onlineUsers[userId] = socket.id;
 
-					io.to(roomId).emit("messageReceived", {
-						firstName,
-						lastName,
-						text,
-					})
-				} catch (err) {
-					console.error("Message error:", err)
-				}
-			}
-		)
+      // Notify all clients that this user is online
+      io.emit("userStatus", { userId, status: "online" });
+    }
 
-		// ✅ Drawing feature
+    // Join private room
+    socket.on("joinChat", ({ targetUserId, userId }) => {
+      const roomId = getSecretRoomId(userId, targetUserId);
+      socket.join(roomId);
+    });
+
+    // Handle sending messages
+    socket.on("sendMessage", async ({ firstName, lastName, userId, targetUserId, text }) => {
+      try {
+        const roomId = getSecretRoomId(userId, targetUserId);
+
+        let chat = await Chat.findOne({
+          participants: { $all: [userId, targetUserId] },
+        });
+
+        if (!chat) {
+          chat = new Chat({
+            participants: [userId, targetUserId],
+            messages: [],
+          });
+        }
+
+        chat.messages.push({
+          senderId: userId,
+          text,
+        });
+
+        await chat.save();
+
+        io.to(roomId).emit("messageReceived", { firstName, lastName, text, createdAt: new Date() });
+      } catch (error) {
+        console.log("Send Message Error:", error.message);
+      }
+    });
+
+    		// ✅ Drawing feature
 		socket.on("joinRoom", ({ roomId, userId }) => {
 			console.log(`User ${userId} joined Drawing Room: ${roomId}`)
 			socket.join(roomId)
@@ -89,10 +95,16 @@ const initializeSocket = (server) => {
 			socket.to(roomId).emit("toolChange", { tool, value })
 		})
 
-		socket.on("disconnect", () => {
-			console.log("Client disconnected:", socket.id)
-		})
-	})
-}
+    // Handle disconnect
+    socket.on("disconnect", () => {
+      if (userId && onlineUsers[userId]) {
+        delete onlineUsers[userId];
 
-module.exports = initializeSocket
+        // Notify all clients that this user is offline
+        io.emit("userStatus", { userId, status: "offline" });
+      }
+    });
+  });
+};
+
+module.exports = initializeSocket;

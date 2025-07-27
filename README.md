@@ -1,4 +1,4 @@
-# CodeMate
+# Connectsy
 
 ## Problem
 
@@ -6,8 +6,8 @@ Finding a reliable coding partner for hackathons, coding competitions, or open-s
 
 ## Solution
 
-Codemate is a full-stack web application that designed to help programmers to find and connect with the perfect coding partners.
-Whether you're looking to team up for a hackathon, coding competition, or open-source project, CodeMate makes collaboration easy with a intuitive left and right swipe interface. Once matched, they can engage in real-time chat, share and discuss code via a collaborative canvas and streamline their development workflow—all in one place.
+Connectsy is a full-stack web application that designed to help programmers to find and connect with the perfect coding partners.
+Whether you're looking to team up for a hackathon, coding competition, or open-source project, Connectsy makes collaboration easy with a intuitive left and right swipe interface. Once matched, they can engage in real-time chat, share and discuss code via a collaborative canvas and streamline their development workflow—all in one place.
 
 
 ## Features
@@ -36,4 +36,3 @@ Whether you're looking to team up for a hackathon, coding competition, or open-s
 - **Frontend**: `React`, `JavaScript`, `Vite`, `Redux`, `Tailwind CSS`, `DaisyUI`, `Socket.io-client`
 - **Backend**: `Node.js`, `Express`, `Mongoose`, `Socket.io`
 - **Database**: `MongoDB`
-
