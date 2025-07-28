@@ -25,7 +25,7 @@ Whether you're looking to team up for a hackathon, coding competition, or open-s
 ### Server-Side (Backend)
 
 - **Database Connection**: Connects to MongoDB using `Mongoose` for secure and scalable data management.
-- **API Endpoints**: RESTful API for handling user, profiles, chats, and other data.
+- **API Endpoints**: RESTful API for handling users, profiles, chats, and other data.
 - **Real-Time Communication**: Powered by `Socket.io` for real-time messaging.
 - **Secure Payment Integration**: Seamless payment integration through the `Razorpay` payment gateway for secure transactions.
 - **Scheduled Notifications**: Cron jobs for sending daily alerts and regular notifications.
@@ -36,3 +36,7 @@ Whether you're looking to team up for a hackathon, coding competition, or open-s
 - **Frontend**: `React`, `JavaScript`, `Vite`, `Redux`, `Tailwind CSS`, `DaisyUI`, `Socket.io-client`
 - **Backend**: `Node.js`, `Express`, `Mongoose`, `Socket.io`
 - **Database**: `MongoDB`
+
+## Contributing
+
+Contributions are welcome🤝! Please open an issue or submit a pull request.
